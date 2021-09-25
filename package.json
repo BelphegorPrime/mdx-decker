@@ -1,6 +1,7 @@
 {
   "private": true,
   "version": "1.0.0",
+  "homepage": "https://BelphegorPrime.github.io/mdx-decker",
   "scripts": {
     "start": "mdx-deck deck.mdx",
     "build": "mdx-deck build deck.mdx",
@@ -10,7 +11,7 @@
     "image": "mdx-deck screenshot deck.mdx",
     "help": "mdx-deck",
     "prepublish:deck": "npm run build",
-    "publish:deck": "gh-pages -d public"
+    "publish:deck": "gh-pages -b gh-pages -d public"
   },
   "dependencies": {
   },
