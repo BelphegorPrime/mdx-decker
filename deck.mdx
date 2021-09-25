@@ -4,6 +4,7 @@ import {
   Step
 } from "code-surfer";
 import { github, vsDark } from "@code-surfer/themes";
+import "prismjs/components/prism-docker.js"
 
 import ImageWithLabel from './components/ImageWithLabel'
 import YoutubeVideo from './components/YoutubeVideo'
@@ -12,12 +13,15 @@ import ToUpperCase from './components/ToUpperCase'
 
 import dockerLogo from './static/docker-logo.png'
 import containerVsVm from './static/containers-vs-virtual-machines.jpg'
+import dockerWikiBasics from './static/docker-wiki-basics.png'
+import dockerLinuxInterfaces from './static/docker-linux-interfaces.png'
 
 export const theme = vsDark;
 
 <!--  1 Container vs VM -->
 <!--  2 Why Docker? History, Pro vs Cons, Alternatives -->
 <!--  3 Install Docker -->
+<!--  4 Build a Docker Container -->
 <!--  4 Run a Docker Container -->
 <!--  5 Link two Docker Container -->
 <!--  6 Build a Docker Image (Architectures, base images, builder pattern) -->
@@ -34,6 +38,8 @@ export const theme = vsDark;
     <img src={dockerLogo} />
 </ImageWithLabel>
 
+https://github.com/BelphegorPrime/mdx-decker
+
 ---
 
 <ImageWithLabel label="Container VS Virtual Maschine">
@@ -42,12 +48,217 @@ export const theme = vsDark;
 
 ---
 
-## Task for today
+## Additional Resources Container vs VM
 
-Using a different layout
+[docker-containers-vs-vms](https://www.weave.works/blog/a-practical-guide-to-choosing-between-docker-containers-and-vms)
 
-- List item 1
-- List item 2
+---
+
+<ImageWithLabel>
+    <img src={dockerWikiBasics} />
+</ImageWithLabel>
+
+---
+
+<ImageWithLabel label="Docker kann verschiedene Schnittstellen verwenden, um auf Virtualisierungsfunktionen des Linux-Kernels zuzugreifen.">
+    <img src={dockerLinuxInterfaces} />
+</ImageWithLabel>
+
+---
+
+## Additional Resources to Docker
+
+[https://de.wikipedia.org/wiki/Docker_(Software)](https://de.wikipedia.org/wiki/Docker_(Software))
+
+---
+
+## Install Docker
+
+There are multiple ways but a good way is to follow the installation guide in the official documentation
+
+https://docs.docker.com/engine/install/debian/
+
+---
+
+## Begriffe
+
+- Dockerfile
+
+    eine Textdatei, die mit verschiedenen Befehlen ein Image beschreibt. Diese werden bei der Ausführung abgearbeitet und für jeden Befehl wird ein einzelner Layer angelegt.
+
+- Layer
+
+    ein Layer ist Teil eines Images und enthält einen Befehl oder eine Datei, die dem Image hinzugefügt wurde. Anhand der Layer kann die ganze Historie des Images nachvollzogen werden.
+
+---
+
+## Einschub - Storage Driver
+
+- overlay2
+- fuse-overlayfs
+- btrfs and zfs
+- vfs
+- aufs
+- devicemapper
+- overlay
+
+https://docs.docker.com/storage/storagedriver/select-storage-driver/
+
+---
+
+## Begriffe 2
+
+- Image
+
+    ein Speicherabbild eines Containers. Das Image selbst besteht aus mehreren Layern, die schreibgeschützt sind und somit nicht verändert werden können. Ein Image ist portabel, kann in Repositories gespeichert und mit anderen Nutzern geteilt werden. Aus einem Image können immer mehrere Container gestartet werden.
+
+- Repository
+
+    ein Repository ist ein Satz gleichnamiger Images mit verschiedenen Tags, zumeist Versionen.
+
+---
+
+## Begriffe 3
+
+- Registry
+
+    eine Registry, wie zum Beispiel Docker Hub oder Artifactory, dient der Verwaltung von Repositories.
+
+- Container
+
+    als Container wird die aktive Instanz eines Images bezeichnet. Der Container wird also gerade ausgeführt und ist beschäftigt. Sobald der Container kein Programm ausführt oder mit seinem Auftrag fertig ist, wird der Container automatisch beendet.
+
+---
+
+<CodeSurfer>
+
+```json title="Vorwort Beispiel"
+[
+  {
+    "domain": "omv.local.net",
+    "portMap": [
+      {
+        "from": 80,
+        "to": 9999
+      }
+    ]
+  },
+  {
+    "domain": "router.local.net",
+    "portMap": [
+      {
+        "from": 80,
+        "ip": "192.168.0.1",
+        "to": 80
+      }
+    ]
+  },
+  ...
+]
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```docker title="Dockerfile und die Layer"
+FROM node:12
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+
+ENV ip=192.168.0.111
+
+RUN node balancer.js
+
+```
+
+```docker 1
+FROM node:lts
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+
+ENV ip=192.168.0.111
+
+RUN node balancer.js
+
+```
+
+```docker 7,8,9,10,11
+FROM node:lts
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN npm init -y
+RUN npm i dotenv
+
+RUN node balancer.js
+
+```
+
+```docker 5,6
+FROM node:lts
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+```
+
+```docker 1
+FROM node:lts AS builder
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+```
+
+```docker 14,15
+FROM node:lts AS builder
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+FROM haproxy:2.3
+COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+
+```
+
+</CodeSurfer>
 
 ---
 
