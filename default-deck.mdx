@@ -7,13 +7,27 @@ import { github, vsDark } from "@code-surfer/themes";
 
 import ImageWithLabel from './components/ImageWithLabel'
 import YoutubeVideo from './components/YoutubeVideo'
+
+import dockerLogo from './static/docker-logo.png'
 import containerVsVm from './static/containers-vs-virtual-machines.jpg'
 
 export const theme = vsDark;
 
 # Docker 101
 
+<div style={{backgroundColor: "#FFFFFF"}}>
+<ImageWithLabel label="">
+    <img src={dockerLogo} />
+</ImageWithLabel>
+</div>
+
 Author: Marcel Rösler
+
+---
+
+<ImageWithLabel label="Container VS Virtual Maschine">
+    <img src={containerVsVm} />
+</ImageWithLabel>
 
 ---
 
@@ -211,7 +225,43 @@ volumes:
     driver: local
 ```
 
-```diff 1[10:14],2[15:19],3[22:27],10:12
+```diff 1[10:14]
+
+```
+
+```diff 3[1:14]
+
+```
+
+```diff 4[1:14]
+
+```
+
+```diff 4:36
+
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js
+console.log(1);
+console.log(2);
+console.log(3);
+```
+
+```diff 1 subtitle="log 1"
+
+```
+
+```diff 2 subtitle="log 2"
+
+```
+
+```diff 3 subtitle="log 3"
 
 ```
 
@@ -266,12 +316,6 @@ const sed = (eiusmod, tempor, incididunt) => {
 </Step>
 
 </CodeSurferColumns>
-
----
-
-<ImageWithLabel label="Container VS Virtual Maschine">
-    <img src={containerVsVm} />
-</ImageWithLabel>
 
 ---
 

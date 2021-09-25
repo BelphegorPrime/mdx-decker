@@ -11,16 +11,21 @@ const Label = styled.div([], {
 const ImageWithLabel = ({
     children,
     label,
-    maxWidth = "80vw",
-    maxHeight = "80vh",
-    style = {maxWidth, maxHeight}
-}) => (
-    <Fragment>
-        <div style={style}>
+    style: propStyle = {}
+}) => {
+    const style = {
+        ...propStyle,
+        maxWidth: propStyle.maxWidth || "80vw",
+        maxHeight: propStyle.maxHeight || "80vh",
+        marginBottom: propStyle.marginBottom || 10
+    }
+
+    return (
+        <Fragment>
             {React.cloneElement(children, {alt: children.alt || label, style})}
-        </div>
-        <Label>{label}</Label>
-    </Fragment>
-);
+            <Label>{label}</Label>
+        </Fragment>
+    )
+};
 
 export default ImageWithLabel
