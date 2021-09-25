@@ -1,93 +1,213 @@
 import {
   CodeSurfer,
   CodeSurferColumns,
-  Step,
+  Step
 } from "code-surfer";
 import { github, vsDark } from "@code-surfer/themes";
 
+import ImageWithLabel from './components/ImageWithLabel'
+import YoutubeVideo from './components/YoutubeVideo'
+
 export const theme = vsDark;
 
-# Hello 👋
+# Docker 101
 
-You are using [MDX Deck](https://github.com/jxnblk/mdx-deck) and [Code Surfer](https://codesurfer.pomb.us)
+Author: Marcel Rösler
+
+---
+
+## Task for today
+
+Using a different layout
+
+- List item 1
+- List item 2
+
+<!-- <Notes>Presenter notes are also available</Notes> -->
+
+---
+
+## A regular slide
 
 ---
 
 <CodeSurfer>
 
-```js title="This is a title" subtitle="and this a subtitle"
-function lorem(ipsum, dolor = 1) {
-  const sit = ipsum == null ? 0 : ipsum.sit;
-  dolor = sit - amet(dolor);
-  return sit
-    ? consectetur(ipsum, 0, dolor < 0 ? 0 : dolor)
-    : [];
-}
+```yml title="This is a title" subtitle="and this a subtitle"
+version: '3.7'
 
-function incididunt(ipsum, ut = 1) {
-  ut = labore.et(amet(ut), 0);
-  const sit = ipsum == null ? 0 : ipsum.sit;
+services:
+  app:
+    image: thecodingmachine/php:7.4-v3-apache
+    ports:
+      - ${APP_PORT:-8000}:80
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      messenger:
+        condition: service_started
+    environment:
+      PHP_EXTENSION_XDEBUG: 1
+      PHP_EXTENSION_GD: 1
 
-  if (!sit || ut < 1) {
-    return [];
-  }
+      APACHE_DOCUMENT_ROOT: public/
 
-  let dolore = 0;
-  let magna = 0;
-  const aliqua = new eiusmod(labore.ut(sit / ut));
+      STARTUP_COMMAND: composer install
 
-  while (dolore < sit) {
-    aliqua[magna++] = consectetur(
-      ipsum,
-      dolore,
-      (dolore += ut)
-    );
-  }
+      PHP_IDE_CONFIG: "serverName=localhost"
+      PHP_INI_MEMORY_LIMIT: 1g
+      PHP_INI_DATE__TIMEZONE: Europe/Berlin
+      PHP_INI_UPLOAD_MAX_FILESIZE: 150M
+      PHP_INI_POST_MAX_SIZE: 200M
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "-f", "-i", "http://localhost" ]
+      interval: 20s
+      timeout: 60s
+      start_period: 15s
 
-  return aliqua;
-}
-```
+  es-indexer:
+    image: thecodingmachine/php:7.4-v3-apache
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      PHP_EXTENSION_XDEBUG: 1
+      PHP_EXTENSION_GD: 1
 
-```js
-function lorem(ipsum, dolor = 1) {
-  const sit = ipsum == null ? 0 : ipsum.sit;
-  dolor = sit - amet(dolor);
-  return sit
-    ? consectetur(ipsum, 0, dolor < 0 ? 0 : dolor)
-    : [];
-}
+      APACHE_DOCUMENT_ROOT: public/
 
-function adipiscing(...elit) {
-  if (!elit.sit) {
-    return [];
-  }
+      STARTUP_COMMAND: bin/console fos:elastica:create || bin/console fos:elastica:populate
 
-  const sed = elit[0];
-  return eiusmod.tempor(sed) ? sed : [sed];
-}
+      PHP_IDE_CONFIG: "serverName=localhost"
+      PHP_INI_MEMORY_LIMIT: 1g
+      PHP_INI_DATE__TIMEZONE: Europe/Berlin
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "-f", "-i", "http://localhost" ]
+      interval: 20s
+      timeout: 60s
+      start_period: 15s
 
-function incididunt(ipsum, ut = 1) {
-  ut = labore.et(amet(ut), 0);
-  const sit = ipsum == null ? 0 : ipsum.sit;
+  messenger:
+    image: thecodingmachine/php:7.4-v3-apache
+    volumes:
+      - ./:/var/www/html
+    command: php bin/console messenger:consume async -vv
+    environment:
+      PHP_INI_DATE__TIMEZONE: Europe/Berlin
 
-  if (!sit || ut < 1) {
-    return [];
-  }
+  encore:
+    image: thecodingmachine/nodejs:14
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      REACT_APP_MERCURE_URL: http://localhost:9090/.well-known/mercure
 
-  let dolore = 0;
-  let magna = 0;
-  const aliqua = new eiusmod(labore.ut(sit / ut));
+      STARTUP_COMMAND_1: npm install
+    command: npm run watch
+    depends_on:
+      app:
+        condition: service_started
 
-  while (dolore < sit) {
-    aliqua[magna++] = consectetur(
-      ipsum,
-      dolore,
-      (dolore += ut)
-    );
-  }
+  elasticsearch:
+    image: elasticsearch:2.0.0
+    environment:
+      - cluster.name=auction
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: curl -u elastic:elastic -s -f localhost:9200/_cat/health >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  return aliqua;
-}
+  # https://mercure.rocks/docs/hub/install
+  mercure:
+    image: dunglas/mercure:v0.12
+    environment:
+      MERCURE_PUBLISHER_JWT_KEY: '!ChangeMe!'
+      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeMe!'
+      ALLOW_ANONYMOUS: 1
+      CORS_ALLOWED_ORIGINS: '*'
+      PUBLISH_ALLOWED_ORIGINS: 'http://localhost'
+      SERVER_NAME: ':80'
+    ports:
+      - ${MERCURE_PORT:-9090}:80
+    command: caddy run -config /etc/caddy/Caddyfile.dev
+
+  db:
+    image: mysql:5.7
+    command: mysqld --sql_mode=""
+    volumes:
+      - ./dump:/docker-entrypoint-initdb.d
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_DATABASE: auction_catalog
+      MYSQL_USER: auction_catalog
+      MYSQL_PASSWORD: auction_catalog
+    healthcheck:
+      test: mysqladmin status
+      interval: 10s
+      start_period: 2s
+      timeout: 10s
+      retries: 10
+    ports:
+      - 33306:3306
+
+  redis:
+    image: redis:5-alpine
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  db_testing:
+    image: mariadb:10.4
+    tmpfs: /var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_DATABASE: auction_catalog
+      MYSQL_USER: auction_catalog
+      MYSQL_PASSWORD: auction_catalog
+    healthcheck:
+      test: mysqladmin status
+      interval: 20s
+      start_period: 2s
+      timeout: 10s
+      retries: 3
+
+
+  data-processor:
+    image: git.hw.ag:5050/fischer/auction-catalog-dataprocessor/live-bidding
+    volumes:
+      - ./docker/data-processor.properties:/app/app.properties
+      - ./storage:/app/storage
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - 8025:8025
+volumes:
+  mysql:
+    driver: local
 ```
 
 ```diff 1[10:14],2[15:19],3[22:27],10:12
@@ -148,5 +268,18 @@ const sed = (eiusmod, tempor, incididunt) => {
 
 ---
 
-docs:  
-[codesurfer.pomb.us](https://codesurfer.pomb.us)
+<ImageWithLabel label="Container VS Virtual Maschine">
+    <img src="https://images.contentstack.io/v3/assets/blt300387d93dabf50e/bltb6200bc085503718/5e1f209a63d1b6503160c6d5/containers-vs-virtual-machines.jpg" />
+</ImageWithLabel>
+
+---
+
+<YoutubeVideo src="https://www.youtube-nocookie.com/embed/D2gXo-T4wqA" />
+
+---
+
+## Questions
+
+---
+
+Thank you for your participation.
