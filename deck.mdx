@@ -5,6 +5,7 @@ import {
 } from "code-surfer";
 import { github, vsDark } from "@code-surfer/themes";
 import "prismjs/components/prism-docker.js"
+import "prismjs/components/prism-shell-session.js"
 
 import ImageWithLabel from './components/ImageWithLabel'
 import YoutubeVideo from './components/YoutubeVideo'
@@ -20,11 +21,12 @@ export const theme = vsDark;
 <!--  2 Why Docker? History, Pro vs Cons, Alternatives -->
 <!--  3 Install Docker -->
 <!--  4 Build a Docker Container -->
-<!--  4 build context. ************************************************************************* -->
+<!--  4 build context.  -->
 <!--  4 Run a Docker Container -->
+<!--  5 Exec Docker Container -->
 <!--  5 Link two Docker Container -->
-<!--  6 Build a Docker Image (Architectures, base images, builder pattern) -->
 <!--  6 What is Docker-compose -->
+<!--  6 Docker-compose commands -->
 <!--  6 What is Docker-swarm -->
 <!--  6 What is Kubernetes -->
 <!--  6 Questions -->
@@ -61,7 +63,7 @@ https://github.com/BelphegorPrime/mdx-decker
 
 <ImageWithLabel
     style={{backgroundColor: "#FFFFFF"}}
-    label="Docker kann verschiedene Schnittstellen verwenden, um auf Virtualisierungsfunktionen des Linux-Kernels zuzugreifen."
+    label="Docker can have use different APIs, to access the Kernels virtualization functionality"
 >
     <img src={dockerLinuxInterfaces} />
 </ImageWithLabel>
@@ -82,23 +84,23 @@ https://docs.docker.com/engine/install/debian/
 
 ---
 
-## Begriffe
+## Terms
 
 1. Dockerfile
 
-    eine Textdatei, die mit verschiedenen Befehlen ein Image beschreibt.<br />
-    Diese werden bei der Ausführung abgearbeitet und für jeden Befehl<br />
-    wird ein einzelner Layer angelegt.
+    a text file that uses various commands to describe an image.<br />
+    These are processed during execution and for each command<br />
+    a single layer is created.
 
 2. Layer
 
-    ein Layer ist Teil eines Images und enthält einen Befehl oder eine<br />
-    Datei, die dem Image hinzugefügt wurde. Anhand der Layer kann die<br />
-    ganze Historie des Images nachvollzogen werden.
+    a layer is part of an image and contains a command or a<br />
+    File added to the image. The entire history of the image<br />
+    can be traced.
 
 ---
 
-## Einschub - Storage Driver
+## Inset - Storage Driver
 
 - overlay2
 - fuse-overlayfs
@@ -112,42 +114,42 @@ https://docs.docker.com/storage/storagedriver/select-storage-driver/
 
 ---
 
-## Begriffe 2
+## Terms 2
 
 3. Image
 
-    Speicherabbild eines Containers. Das Image selbst besteht aus<br />
-    mehreren Layern, die schreibgeschützt sind und somit nicht verändert<br />
-    werden können. Ein Image ist portabel, kann in Repositories gespeichert<br />
-    und mit anderen Nutzern geteilt werden. Aus einem Image können immer<br />
-    mehrere Container gestartet werden.
+    Memory dump of a container. The image itself consists of<br />
+    several layers that are write-protected and therefore not changed<br />
+    can be. An image is portable and can be stored in repositories<br />
+    and shared with other users. You can always use one image to start<br />
+    multiple containers.
 
 4. Repository
 
-    ein Repository ist ein Satz gleichnamiger Images mit verschiedenen<br />
-    Tags, zumeist Versionen.
+    a repository is a set of images of the same name with different<br />
+    Tags, mostly versions.
 
 ---
 
-## Begriffe 3
+## Terms 3
 
 5. Registry
 
-    eine Registry, wie zum Beispiel Docker Hub oder Artifactory,<br />
-    dient der Verwaltung von Repositories.
+    a registry, such as Docker Hub or Artifactory,<br />
+    is used to manage repositories.
 
 6. Container
 
-    als Container wird die aktive Instanz eines Images bezeichnet.<br />
-    Der Container wird also gerade ausgeführt und ist beschäftigt.<br />
-    Sobald der Container kein Programm ausführt oder mit seinem<br />
-    Auftrag fertig ist, wird der Container automatisch beendet.
+    the active instance of an image is referred to as a container.<br />
+    So the container is currently running and busy.<br />
+    As soon as the container is not running a program or with its<br />
+    If the job is finished, the container is automatically terminated.
 
 ---
 
 <CodeSurfer>
 
-```json title="Vorwort Beispiel"
+```json title="Foreword example"
 [
   {
     "domain": "omv.local.net",
@@ -178,7 +180,7 @@ https://docs.docker.com/storage/storagedriver/select-storage-driver/
 
 <CodeSurfer>
 
-```docker title="Dockerfile und die Layer"
+```docker title="Dockerfile and the Layer"
 FROM node:12
 
 WORKDIR /app
@@ -283,23 +285,257 @@ COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 
 <CodeSurfer>
 
-```yml title="A DOCKER-COMPOSE FILE"
+```shell 1
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 2
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 3,4
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 5,6,7,8
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 5,6,7
+$ docker build .
+Sending build context to Docker daemon  20.48kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Using cache
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Using cache
+ ---> 2ecc8a214505
+```
+
+</CodeSurfer>
+
+---
+
+```shell
+Step 10/10 : COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+ ---> 9b907f63d1f3
+Successfully built 9b907f63d1f3
+```
+
+---
+
+```shell
+$ docker build .
+```
+
+```shell
+$ docker build -t balancer:1.0.0 .
+```
+
+```shell
+$ docker build -t balancer:latest -t balancer:1.0.1 .
+```
+
+
+---
+
+```shell
+Step 10/10 : COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+ ---> Using cache
+ ---> 9b907f63d1f3
+Successfully built 9b907f63d1f3
+Successfully tagged balancer:latest
+Successfully tagged balancer:1.0.1
+```
+
+https://docs.docker.com/engine/reference/commandline/build/
+
+---
+
+```shell
+$ docker run 9b907f63d1f3
+```
+
+```shell
+$ docker run balancer:latest
+```
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker run balancer:latest -p 80:80 -p 443:443 -v ./cert:/config
+```
+
+```shell 1[30:49]
+$ docker run balancer:latest -p 80:80 -p 443:443 -v ./cert:/config
+```
+
+```shell 1[30:52]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config
+```
+
+```shell 1[53:70]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config
+```
+
+```shell 1[71:86]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config --name=balancer
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+ec0bb8cbd68c   balancer_balancer   "docker-entrypoint.s…"   15 seconds ago   Up 2 seconds   0.0.0.0:8001->80/tcp, :::8001->80/tcp, 0.0.0.0:4430->443/tcp, :::4430->443/tcp   balancer
+```
+
+```shell 2,3
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+ec0bb8cbd68c   balancer_balancer   "docker-entrypoint.s…"   15 seconds ago   Up 2 seconds   0.0.0.0:8001->80/tcp, :::8001->80/tcp, 0.0.0.0:4430->443/tcp, :::4430->443/tcp   balancer
+```
+
+</CodeSurfer>
+
+---
+
+Go into a Container / Execute a Command
+
+<CodeSurfer>
+
+```shell 1,2
+$ docker exec -it balancer /bin/bash
+root@ec0bb8cbd68c:/#
+```
+
+```shell
+$ docker exec -it balancer /bin/bash
+root@ec0bb8cbd68c:/# cd /config
+root@ec0bb8cbd68c:/config# ls
+server.pem  server.pem.key
+root@ec0bb8cbd68c:/config#
+```
+
+</CodeSurfer>
+
+https://docs.docker.com/engine/reference/commandline/exec/
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker stop balancer
+```
+
+```shell 1,2
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+```
+
+</CodeSurfer>
+
+---
+
+Linking Two or more Containers
+
+<CodeSurfer>
+
+```shell 1
+$ docker run -d --name db training/postgres
+```
+
+```shell 1
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config --name=balancer
+```
+
+```shell 1
+$ docker run balancer:latest -p 8001:80 -p 4430:443 --link db:db -v ./cert:/config --name=balancer
+```
+
+```shell 1[53:65]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 --link db:db -v ./cert:/config --name=balancer
+```
+
+</CodeSurfer>
+
+https://docs.docker.com/network/links/
+
+---
+
+# docker-compose
+
+---
+
+## Install
+https://docs.docker.com/compose/install/
+
+---
+
+<CodeSurfer>
+
+```yml title="docker-compose.yml"
 version: "3"
 
 services:
-  balancer:
-    container_name: balancer
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./cert:/config
-    sysctls:
-      - net.ipv4.ip_unprivileged_port_start=0
-    restart: unless-stopped
+    balancer:
+        container_name: balancer
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        ports:
+            - 8001:80
+            - 4430:443
+        volumes:
+            - ./cert:/config
+    db:
+        image: training/postgres
+
 ```
 
 ```diff 1 subtitle="docker-compose version"
@@ -310,11 +546,33 @@ services:
 
 ```
 
-```diff 4:16
+```diff 4:13
+
+```
+
+```diff 14:15
 
 ```
 
 </CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```yml title="docker-compose.override.yml"
+services:
+    balancer:
+        ports:
+            - 8001:80
+            - 4430:443
+```
+
+</CodeSurfer>
+
+---
+
+https://www.composerize.com/
 
 ---
 
