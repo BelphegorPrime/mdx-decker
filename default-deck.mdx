@@ -4,24 +4,42 @@ import {
   Step
 } from "code-surfer";
 import { github, vsDark } from "@code-surfer/themes";
+import "prismjs/components/prism-docker.js"
+import "prismjs/components/prism-shell-session.js"
 
 import ImageWithLabel from './components/ImageWithLabel'
 import YoutubeVideo from './components/YoutubeVideo'
 
 import dockerLogo from './static/docker-logo.png'
 import containerVsVm from './static/containers-vs-virtual-machines.jpg'
+import dockerWikiBasics from './static/docker-wiki-basics.png'
+import dockerLinuxInterfaces from './static/docker-linux-interfaces.png'
 
 export const theme = vsDark;
 
+<!--  1 Container vs VM -->
+<!--  2 Why Docker? History, Pro vs Cons, Alternatives -->
+<!--  3 Install Docker -->
+<!--  4 Build a Docker Container -->
+<!--  4 build context.  -->
+<!--  4 Run a Docker Container -->
+<!--  5 Exec Docker Container -->
+<!--  5 Link two Docker Container -->
+<!--  6 What is Docker-compose -->
+<!--  6 Docker-compose commands -->
+<!--  6 What is Docker-swarm -->
+<!--  6 What is Kubernetes -->
+<!--  6 Questions -->
+<!--  6 Thank you -->
+<!--  6 Link to repo -->
+
 # Docker 101
 
-<div style={{backgroundColor: "#FFFFFF"}}>
-<ImageWithLabel label="">
+<ImageWithLabel style={{backgroundColor: "#FFFFFF"}} label="Author: Marcel Rösler">
     <img src={dockerLogo} />
 </ImageWithLabel>
-</div>
 
-Author: Marcel Rösler
+https://github.com/BelphegorPrime/mdx-decker
 
 ---
 
@@ -31,217 +49,684 @@ Author: Marcel Rösler
 
 ---
 
-## Task for today
+## Additional Resources Container vs VM
 
-Using a different layout
-
-- List item 1
-- List item 2
-
-<!-- <Notes>Presenter notes are also available</Notes> -->
+[docker-containers-vs-vms](https://www.weave.works/blog/a-practical-guide-to-choosing-between-docker-containers-and-vms)
 
 ---
 
-## A regular slide
+<ImageWithLabel>
+    <img src={dockerWikiBasics} />
+</ImageWithLabel>
+
+---
+
+<ImageWithLabel
+    style={{backgroundColor: "#FFFFFF"}}
+    label="Docker can have use different APIs, to access the Kernels virtualization functionality"
+>
+    <img src={dockerLinuxInterfaces} />
+</ImageWithLabel>
+
+---
+
+## Additional Resources to Docker
+
+[https://de.wikipedia.org/wiki/Docker_(Software)](https://de.wikipedia.org/wiki/Docker_(Software))
+
+---
+
+## Install Docker
+
+There are multiple ways but a good way is to follow the installation guide in the official documentation
+
+https://docs.docker.com/engine/install/debian/
+
+---
+
+## Terms
+
+1. Dockerfile
+
+    a text file that uses various commands to describe an image.<br />
+    These are processed during execution and for each command<br />
+    a single layer is created.
+
+2. Layer
+
+    a layer is part of an image and contains a command or a<br />
+    File added to the image. The entire history of the image<br />
+    can be traced.
+
+---
+
+## Inset - Storage Driver
+
+- overlay2
+- fuse-overlayfs
+- btrfs and zfs
+- vfs
+- aufs
+- devicemapper
+- overlay
+
+https://docs.docker.com/storage/storagedriver/select-storage-driver/
+
+---
+
+## Terms 2
+
+3. Image
+
+    Memory dump of a container. The image itself consists of<br />
+    several layers that are write-protected and therefore not changed<br />
+    can be. An image is portable and can be stored in repositories<br />
+    and shared with other users. You can always use one image to start<br />
+    multiple containers.
+
+4. Repository
+
+    a repository is a set of images of the same name with different<br />
+    Tags, mostly versions.
+
+---
+
+## Terms 3
+
+5. Registry
+
+    a registry, such as Docker Hub or Artifactory,<br />
+    is used to manage repositories.
+
+6. Container
+
+    the active instance of an image is referred to as a container.<br />
+    So the container is currently running and busy.<br />
+    As soon as the container is not running a program or with its<br />
+    If the job is finished, the container is automatically terminated.
 
 ---
 
 <CodeSurfer>
 
-```yml title="This is a title" subtitle="and this a subtitle"
-version: '3.7'
-
-services:
-  app:
-    image: thecodingmachine/php:7.4-v3-apache
-    ports:
-      - ${APP_PORT:-8000}:80
-    volumes:
-      - ./:/var/www/html
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-      messenger:
-        condition: service_started
-    environment:
-      PHP_EXTENSION_XDEBUG: 1
-      PHP_EXTENSION_GD: 1
-
-      APACHE_DOCUMENT_ROOT: public/
-
-      STARTUP_COMMAND: composer install
-
-      PHP_IDE_CONFIG: "serverName=localhost"
-      PHP_INI_MEMORY_LIMIT: 1g
-      PHP_INI_DATE__TIMEZONE: Europe/Berlin
-      PHP_INI_UPLOAD_MAX_FILESIZE: 150M
-      PHP_INI_POST_MAX_SIZE: 200M
-    healthcheck:
-      test: [ "CMD", "curl", "-s", "-f", "-i", "http://localhost" ]
-      interval: 20s
-      timeout: 60s
-      start_period: 15s
-
-  es-indexer:
-    image: thecodingmachine/php:7.4-v3-apache
-    volumes:
-      - ./:/var/www/html
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
-    environment:
-      PHP_EXTENSION_XDEBUG: 1
-      PHP_EXTENSION_GD: 1
-
-      APACHE_DOCUMENT_ROOT: public/
-
-      STARTUP_COMMAND: bin/console fos:elastica:create || bin/console fos:elastica:populate
-
-      PHP_IDE_CONFIG: "serverName=localhost"
-      PHP_INI_MEMORY_LIMIT: 1g
-      PHP_INI_DATE__TIMEZONE: Europe/Berlin
-    healthcheck:
-      test: [ "CMD", "curl", "-s", "-f", "-i", "http://localhost" ]
-      interval: 20s
-      timeout: 60s
-      start_period: 15s
-
-  messenger:
-    image: thecodingmachine/php:7.4-v3-apache
-    volumes:
-      - ./:/var/www/html
-    command: php bin/console messenger:consume async -vv
-    environment:
-      PHP_INI_DATE__TIMEZONE: Europe/Berlin
-
-  encore:
-    image: thecodingmachine/nodejs:14
-    working_dir: /app
-    volumes:
-      - ./:/app
-    environment:
-      REACT_APP_MERCURE_URL: http://localhost:9090/.well-known/mercure
-
-      STARTUP_COMMAND_1: npm install
-    command: npm run watch
-    depends_on:
-      app:
-        condition: service_started
-
-  elasticsearch:
-    image: elasticsearch:2.0.0
-    environment:
-      - cluster.name=auction
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    healthcheck:
-      test: curl -u elastic:elastic -s -f localhost:9200/_cat/health >/dev/null || exit 1
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  # https://mercure.rocks/docs/hub/install
-  mercure:
-    image: dunglas/mercure:v0.12
-    environment:
-      MERCURE_PUBLISHER_JWT_KEY: '!ChangeMe!'
-      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeMe!'
-      ALLOW_ANONYMOUS: 1
-      CORS_ALLOWED_ORIGINS: '*'
-      PUBLISH_ALLOWED_ORIGINS: 'http://localhost'
-      SERVER_NAME: ':80'
-    ports:
-      - ${MERCURE_PORT:-9090}:80
-    command: caddy run -config /etc/caddy/Caddyfile.dev
-
-  db:
-    image: mysql:5.7
-    command: mysqld --sql_mode=""
-    volumes:
-      - ./dump:/docker-entrypoint-initdb.d
-      - mysql:/var/lib/mysql
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
-      MYSQL_DATABASE: auction_catalog
-      MYSQL_USER: auction_catalog
-      MYSQL_PASSWORD: auction_catalog
-    healthcheck:
-      test: mysqladmin status
-      interval: 10s
-      start_period: 2s
-      timeout: 10s
-      retries: 10
-    ports:
-      - 33306:3306
-
-  redis:
-    image: redis:5-alpine
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 1s
-      timeout: 3s
-      retries: 30
-
-  db_testing:
-    image: mariadb:10.4
-    tmpfs: /var/lib/mysql
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
-      MYSQL_DATABASE: auction_catalog
-      MYSQL_USER: auction_catalog
-      MYSQL_PASSWORD: auction_catalog
-    healthcheck:
-      test: mysqladmin status
-      interval: 20s
-      start_period: 2s
-      timeout: 10s
-      retries: 3
-
-
-  data-processor:
-    image: git.hw.ag:5050/fischer/auction-catalog-dataprocessor/live-bidding
-    volumes:
-      - ./docker/data-processor.properties:/app/app.properties
-      - ./storage:/app/storage
-
-  mailhog:
-    image: mailhog/mailhog:latest
-    ports:
-      - 8025:8025
-volumes:
-  mysql:
-    driver: local
+```json title="Foreword example"
+[
+  {
+    "domain": "omv.local.net",
+    "portMap": [
+      {
+        "from": 80,
+        "to": 9999
+      }
+    ]
+  },
+  {
+    "domain": "router.local.net",
+    "portMap": [
+      {
+        "from": 80,
+        "ip": "192.168.0.1",
+        "to": 80
+      }
+    ]
+  },
+  ...
+]
 ```
 
-```diff 1[10:14]
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```docker title="Dockerfile and the Layer"
+FROM node:12
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+
+ENV ip=192.168.0.111
+
+RUN node balancer.js
 
 ```
 
-```diff 3[1:14]
+```docker 1
+FROM node:lts
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+
+ENV ip=192.168.0.111
+
+RUN node balancer.js
 
 ```
 
-```diff 4[1:14]
+```docker 7,8,9,10,11
+FROM node:lts
+
+WORKDIR /app
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN npm init -y
+RUN npm i dotenv
+
+RUN node balancer.js
 
 ```
 
-```diff 4:36
+```docker 5,6
+FROM node:lts
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+```
+
+```docker 1
+FROM node:lts AS builder
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+```
+
+```docker 14,15
+FROM node:lts AS builder
+
+WORKDIR /app
+
+RUN npm init -y
+RUN npm i dotenv
+
+COPY ./balancer.json .
+COPY ./balancer.js .
+COPY ./.env .
+
+RUN node balancer.js
+
+FROM haproxy:2.3
+COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 
 ```
 
 </CodeSurfer>
+
+---
+
+## Build Context
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 2
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 3,4
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 5,6,7,8
+$ docker build .
+Sending build context to Docker daemon  19.46kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Running in 495c19bec260
+Removing intermediate container 495c19bec260
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Running in 99ccd606b8ad
+```
+
+```shell 5,6,7
+$ docker build .
+Sending build context to Docker daemon  20.48kB
+Step 1/10 : FROM node:lts AS builder
+ ---> 1fa6026dd8bb
+Step 2/10 : WORKDIR /app
+ ---> Using cache
+ ---> 01dc4c2ce9d5
+Step 3/10 : RUN npm init -y
+ ---> Using cache
+ ---> 2ecc8a214505
+```
+
+</CodeSurfer>
+
+---
+
+```shell
+Step 10/10 : COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+ ---> 9b907f63d1f3
+Successfully built 9b907f63d1f3
+```
+
+---
+
+```shell
+$ docker build .
+```
+
+```shell
+$ docker build -t balancer:1.0.0 .
+```
+
+```shell
+$ docker build -t balancer:latest -t balancer:1.0.1 .
+```
+
+
+---
+
+```shell
+Step 10/10 : COPY --from=builder /app/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
+ ---> Using cache
+ ---> 9b907f63d1f3
+Successfully built 9b907f63d1f3
+Successfully tagged balancer:latest
+Successfully tagged balancer:1.0.1
+```
+
+https://docs.docker.com/engine/reference/commandline/build/
+
+---
+
+```shell
+$ docker run 9b907f63d1f3
+```
+
+```shell
+$ docker run balancer:latest
+```
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker run balancer:latest -p 80:80 -p 443:443 -v ./cert:/config
+```
+
+```shell 1[30:49]
+$ docker run balancer:latest -p 80:80 -p 443:443 -v ./cert:/config
+```
+
+```shell 1[30:52]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config
+```
+
+```shell 1[53:70]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config
+```
+
+```shell 1[71:86]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config --name=balancer
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+ec0bb8cbd68c   balancer_balancer   "docker-entrypoint.s…"   15 seconds ago   Up 2 seconds   0.0.0.0:8001->80/tcp, :::8001->80/tcp, 0.0.0.0:4430->443/tcp, :::4430->443/tcp   balancer
+```
+
+```shell 2,3
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+ec0bb8cbd68c   balancer_balancer   "docker-entrypoint.s…"   15 seconds ago   Up 2 seconds   0.0.0.0:8001->80/tcp, :::8001->80/tcp, 0.0.0.0:4430->443/tcp, :::4430->443/tcp   balancer
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```shell
+$ docker stats
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```shell
+CONTAINER ID   NAME       CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O     PIDS
+13cd75e8a834   balancer   0.24%     74.59MiB / 15GiB    0.49%     6.82MB / 6.01MB   10.4MB / 0B   17
+```
+
+</CodeSurfer>
+
+---
+
+Go into a Container / Execute a Command
+
+<CodeSurfer>
+
+```shell 1,2
+$ docker exec -it balancer /bin/bash
+root@ec0bb8cbd68c:/#
+```
+
+```shell
+$ docker exec -it balancer /bin/bash
+root@ec0bb8cbd68c:/# cd /config
+root@ec0bb8cbd68c:/config# ls
+server.pem  server.pem.key
+root@ec0bb8cbd68c:/config#
+```
+
+</CodeSurfer>
+
+https://docs.docker.com/engine/reference/commandline/exec/
+
+---
+
+<CodeSurfer>
+
+```shell 1
+$ docker stop balancer
+```
+
+```shell 1,2
+$ docker ps
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS         PORTS                                                                            NAMES
+```
+
+</CodeSurfer>
+
+---
+
+Linking Two or more Containers
+
+<CodeSurfer>
+
+```shell 1
+$ docker run -d --name db training/postgres
+```
+
+```shell 1
+$ docker run balancer:latest -p 8001:80 -p 4430:443 -v ./cert:/config --name=balancer
+```
+
+```shell 1
+$ docker run balancer:latest -p 8001:80 -p 4430:443 --link db:db -v ./cert:/config --name=balancer
+```
+
+```shell 1[53:65]
+$ docker run balancer:latest -p 8001:80 -p 4430:443 --link db:db -v ./cert:/config --name=balancer
+```
+
+</CodeSurfer>
+
+https://docs.docker.com/network/links/
+
+---
+
+## docker-compose
+
+---
+
+## Install
+https://docs.docker.com/compose/install/
+
+---
+
+<CodeSurfer>
+
+```yml title="docker-compose.yml"
+version: "3"
+
+services:
+    balancer:
+        container_name: balancer
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        ports:
+            - 8001:80
+            - 4430:443
+        volumes:
+            - ./cert:/config
+    db:
+        image: training/postgres
+
+```
+
+```diff 1 subtitle="docker-compose version"
+
+```
+
+```diff 3 subtitle="services"
+
+```
+
+```diff 4:13
+
+```
+
+```diff 14:15
+
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```yml title="docker-compose.override.yml"
+services:
+    balancer:
+        ports:
+            - 8001:80
+            - 4430:443
+```
+
+</CodeSurfer>
+
+---
+
+https://www.composerize.com/
+
+---
+
+## docker-compose commands
+
+---
+
+## docker-compose commands
+
+- build
+
+    Build or rebuild services
+
+- up (--build -d)
+
+    Create and start containers
+
+- down
+
+    Stop and remove resources
+
+---
+
+## docker-compose commands
+
+- logs (-f)
+
+    View output from containers
+
+- exec
+
+    Execute a command in a running container
+
+---
+
+## docker-compose commands
+
+- help
+
+    Get help on a command
+
+- images
+
+    List images
+
+- kill
+
+    Kill containers
+
+---
+
+## docker-compose commands
+
+- port
+
+    Print the public port for a port binding
+
+- pause
+
+    Pause services
+
+- unpause
+
+    Unpause services
+
+---
+
+## docker-compose commands
+
+- ps
+
+    List containers
+
+- pull
+
+   Pull service images
+
+- push
+
+   Push service images
+
+---
+
+## docker-compose commands
+
+- start
+
+    Start services
+
+- stop
+
+    Stop services
+
+- restart
+
+    Restart services
+
+---
+
+## docker-compose commands
+
+- rm
+
+    Remove stopped containers
+    Any data which is not in a volume will be lost.
+
+- run
+
+    Start a Containern to run a one-off command
+
+- scale
+
+    Set number of containers for a service
+
+---
+
+## docker-compose commands
+
+- events
+
+    Receive real time events from containers
+
+- top
+
+    Display the running processes
+
+- version
+
+    Show version information and quit
+
+---
+
+## Questions
 
 ---
 
@@ -320,10 +805,6 @@ const sed = (eiusmod, tempor, incididunt) => {
 ---
 
 <YoutubeVideo src="https://www.youtube-nocookie.com/embed/D2gXo-T4wqA" />
-
----
-
-## Questions
 
 ---
 
