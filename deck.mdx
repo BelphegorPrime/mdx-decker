@@ -444,6 +444,27 @@ ec0bb8cbd68c   balancer_balancer   "docker-entrypoint.s…"   15 seconds ago   U
 
 ---
 
+<CodeSurfer>
+
+```shell
+$ docker stats
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```shell
+CONTAINER ID   NAME       CPU %     MEM USAGE / LIMIT   MEM %     NET I/O           BLOCK I/O     PIDS
+13cd75e8a834   balancer   0.24%     74.59MiB / 15GiB    0.49%     6.82MB / 6.01MB   10.4MB / 0B   17
+```
+
+</CodeSurfer>
+
+---
+
 Go into a Container / Execute a Command
 
 <CodeSurfer>
@@ -508,7 +529,7 @@ https://docs.docker.com/network/links/
 
 ---
 
-# docker-compose
+## docker-compose
 
 ---
 
@@ -573,6 +594,139 @@ services:
 ---
 
 https://www.composerize.com/
+
+---
+
+## docker-compose commands
+
+---
+
+## docker-compose commands
+
+- build
+
+    Build or rebuild services
+
+- up (--build -d)
+
+    Create and start containers
+
+- down
+
+    Stop and remove resources
+
+---
+
+## docker-compose commands
+
+- logs (-f)
+
+    View output from containers
+
+- exec
+
+    Execute a command in a running container
+
+---
+
+## docker-compose commands
+
+- help
+
+    Get help on a command
+
+- images
+
+    List images
+
+- kill
+
+    Kill containers
+
+---
+
+## docker-compose commands
+
+- port
+
+    Print the public port for a port binding
+
+- pause
+
+    Pause services
+
+- unpause
+
+    Unpause services
+
+---
+
+## docker-compose commands
+
+- ps
+
+    List containers
+
+- pull
+
+   Pull service images
+
+- push
+
+   Push service images
+
+---
+
+## docker-compose commands
+
+- start
+
+    Start services
+
+- stop
+
+    Stop services
+
+- restart
+
+    Restart services
+
+---
+
+## docker-compose commands
+
+- rm
+
+    Remove stopped containers
+    Any data which is not in a volume will be lost.
+
+- run
+
+    Start a Containern to run a one-off command
+
+- scale
+
+    Set number of containers for a service
+
+---
+
+## docker-compose commands
+
+- events
+
+    Receive real time events from containers
+
+- top
+
+    Display the running processes
+
+- version
+
+    Show version information and quit
+
+---
+
+## Questions
 
 ---
 
@@ -651,10 +805,6 @@ const sed = (eiusmod, tempor, incididunt) => {
 ---
 
 <YoutubeVideo src="https://www.youtube-nocookie.com/embed/D2gXo-T4wqA" />
-
----
-
-## Questions
 
 ---
 
